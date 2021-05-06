@@ -1,8 +1,9 @@
 <template>
   <div v-if="!loading">
-    <div class="list-shot mt-8" id="list-shot">
+    <div class="list-shot" id="list-shot">
       <ShotItem v-for="shot in shots" :key="shot.id" :shot="shot" />
     </div>
+    <div v-show="isLoadMore && !isNoMoreResult">Load more...</div>
     <div
       v-show="isNoMoreResult"
       class="flex items-center justify-center mt-8 text-xs"
@@ -17,90 +18,95 @@
       No more shots
     </div>
   </div>
+  <div v-if="loading" class="list-shot">
+    <ShotLoadingItem v-for="(shot, index) in 4" :key="index" />
+  </div>
 </template>
 
 <script>
-import { ref, watch, onBeforeMount } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ref, reactive, watch, onMounted, nextTick } from "vue";
+import { useRoute } from "vue-router";
 import shotsApi from "@/api/Factory/shots.js";
 import ShotItem from "@/components/Shot/Item.vue";
+import ShotLoadingItem from "@/components/Shot/Loading.vue";
 
 export default {
-  components: { ShotItem },
+  components: { ShotItem, ShotLoadingItem },
   setup() {
     const shots = ref([]);
-    const pagination = ref({
-      page: 1,
-      limit: 12,
-    });
+    const shotPagination = reactive({ page: 1, total_pages: 1 });
     const loading = ref(true);
+    const isLoadMore = ref(false);
     const isNoMoreResult = ref(false);
     const route = useRoute();
 
     watch(
       route,
-      (val) => {
-        fetchShots(val.query.category_id || null);
+      () => {
+        reFetchShots();
       },
       { immediate: true }
     );
 
-    async function fetchShots(category_id) {
+    onMounted(() => {
+      window.addEventListener("scroll", async () => {
+        const element = document.getElementById("list-shot");
+        await nextTick();
+        if (
+          element &&
+          window.scrollY + window.innerHeight >= element.scrollHeight
+        )
+          await loadMore();
+      });
+    });
+
+    async function reFetchShots() {
       loading.value = true;
       try {
-        const { page, limit } = pagination.value;
-        const params = {
-          page,
-          limit,
-          ...(category_id && { category_id }),
-        };
-        const { data } = await shotsApi.get(params);
-        shots.value = data || [];
+        shots.value = [];
+        shotPagination.page = 1;
+        isNoMoreResult.value = false;
+        await fetchShots(shotPagination.page);
       } catch (e) {
         console.log(e);
       } finally {
         loading.value = false;
       }
     }
-
-    return { shots };
-  },
-  mounted() {
-    window.addEventListener("scroll", () => this.loadMore());
-    this.emitter.on("change-category", (category) => {
-      this.handleGetShotsByCategory(category);
-    });
-  },
-  methods: {
-    getShots() {
-      this.shots =
-        Object.keys(this.currentCategory).length === 0 ||
-        this.currentCategory.id === 0
-          ? shots.slice(0, 12)
-          : shots
-              .filter((shot) => {
-                return shot.category_id === this.currentCategory.id;
-              })
-              .slice(0, 12);
-      this.isNoMoreResult = false;
-    },
-    loadMore() {
-      const element = document.getElementById("list-shot");
-      if (window.scrollY + window.innerHeight >= element.scrollHeight) {
-        if (this.shots.length < shots.length)
-          this.shots = this.shots.concat(shots.slice(12));
-        else {
-          this.isNoMoreResult = true;
-          window.removeEventListener("scroll", this.loadMore);
+    async function fetchShots(page = 1, limit = 12) {
+      try {
+        const { category_id } = route.query;
+        const params = {
+          page,
+          limit,
+          ...(category_id && { category_id }),
+        };
+        const { data, pagination } = await shotsApi.get(params);
+        if (data && pagination) {
+          shots.value = shots.value.concat(data);
+          shotPagination.page = pagination.page || 1;
+          shotPagination.total_pages = pagination.total_pages || 1;
         }
+      } catch (e) {
+        console.log(e);
       }
-    },
-    handleGetShotsByCategory(category) {
-      if (category) {
-        this.currentCategory = category;
-        this.getShots();
+    }
+    async function loadMore() {
+      const { page = 1, total_pages = 1 } = shotPagination;
+      try {
+        if (page < total_pages) {
+          shotPagination.page++;
+          isLoadMore.value = true;
+          await fetchShots(shotPagination.page);
+        } else isNoMoreResult.value = true;
+      } catch (e) {
+        console.log(e);
+      } finally {
+        isLoadMore.value = false;
       }
-    },
+    }
+
+    return { shots, loading, shotPagination, isLoadMore, isNoMoreResult };
   },
 };
 </script>
@@ -111,5 +117,6 @@ export default {
   list-style: none;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   grid-gap: 2.75rem;
+  @apply mt-8;
 }
 </style>

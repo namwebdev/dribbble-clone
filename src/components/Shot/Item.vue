@@ -1,7 +1,7 @@
 <template>
   <div class="shot-container">
     <div class="relative">
-      <div class="shot-overlay transition-effect">
+      <a :href="link" target="_blank" class="shot-overlay transition-effect">
         <div class="h-1/4 flex items-center justify-between w-full px-4">
           <div class="text-white font-bold">{{ title }}</div>
           <a :href="link" target="_blank" class="text-white">
@@ -23,7 +23,8 @@
             </svg>
           </a>
         </div>
-      </div>
+      </a>
+
       <img class="rounded-xl" :src="image" :alt="title" />
     </div>
     <!--  -->
@@ -34,7 +35,7 @@
           :src="author_avatar"
           :alt="author_name"
         />
-        <span class="text-sm ml-2">{{ author_name }}</span>
+        <span class="text-sm ml-2 font-bold">{{ author_name }}</span>
       </div>
       <!--  -->
       <div class="flex items-center">

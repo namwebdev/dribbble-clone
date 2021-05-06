@@ -16,7 +16,7 @@
   </ul>
 </template>
 <script>
-import { ref, onBeforeMount, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import categoryApi from "@/api/Factory/categories.js";
 
@@ -29,7 +29,6 @@ export default {
     const route = useRoute();
 
     initShots();
-    // onBeforeMount(() => initShots());
     // onMounted(() => handleSwipeShots());
 
     async function initShots() {
