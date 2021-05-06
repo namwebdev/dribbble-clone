@@ -7,8 +7,8 @@
     <li v-for="category in categories" :key="category.id">
       <span
         class="text-black hover:text-black-hover transition-effect cursor-pointer text-sm px-5 min-w-max"
-        :class="{ active: activeCategory.id === category.id }"
-        @click="onClickCategory(category)"
+        :class="{ active: isCateActive(category) }"
+        @click="handleRouteToCategoryPage(category)"
       >
         {{ category.name }}
       </span>
@@ -21,35 +21,33 @@ import { useRouter, useRoute } from "vue-router";
 import categoryApi from "@/api/Factory/categories.js";
 
 export default {
-  setup() {
+  props: {
+    categories: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props) {
     const categories = ref([]);
-    const activeCategory = ref({});
-    const loading = ref(false);
     const router = useRouter();
     const route = useRoute();
 
     initShots();
     // onMounted(() => handleSwipeShots());
 
-    async function initShots() {
-      loading.value = true;
-      try {
-        const { data } = await categoryApi.get();
-        const { category_id } = route.query;
-        const allItem = [{ id: 0, name: "All" }];
-        categories.value = [...allItem, ...data];
-        activeCategory.value = category_id
-          ? categories.value.find((cate) => cate.id === Number(category_id))
-          : categories.value[0];
-      } catch (e) {
-        console.log(e);
-      } finally {
-        loading.value = false;
-      }
+    function initShots() {
+      const allItem = [{ id: 0, name: "All" }];
+      categories.value = [...allItem, ...props.categories];
     }
-    function onClickCategory(category) {
-      router.push({ query: category.id && { category_id: category.id } });
-      activeCategory.value = category;
+    function isCateActive(category) {
+      if (route.params.category) return category.tag === route.params.category;
+      return category.id === 0;
+    }
+    function handleRouteToCategoryPage(category) {
+      const routeObj = category.tag
+        ? { name: "Category", params: { category: category.tag } }
+        : { name: "Home" };
+      router.push(routeObj);
     }
     function handleSwipeShots() {
       const slider = document.getElementById("shots");
@@ -80,7 +78,11 @@ export default {
       });
     }
 
-    return { categories, activeCategory, onClickCategory };
+    return {
+      categories,
+      handleRouteToCategoryPage,
+      isCateActive,
+    };
   },
 };
 </script>

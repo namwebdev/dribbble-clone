@@ -7,6 +7,7 @@ const routes = [
     name: "Home",
     component: Home,
   },
+  { path: "/category/:category", name: "Category", component: Home },
 ];
 
 const router = createRouter({

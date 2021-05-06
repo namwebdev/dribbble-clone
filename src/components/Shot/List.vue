@@ -10,7 +10,7 @@
     </div>
     <div
       v-show="isNoMoreResult"
-      class="flex items-center justify-center mt-8 text-xs"
+      class="flex items-center justify-center mt-12 text-xs"
     >
       <img
         class="mr-1"
@@ -36,10 +36,16 @@ import ShotLoadingItem from "@/components/Shot/Loading.vue";
 
 export default {
   components: { ShotItem, ShotLoadingItem },
-  setup() {
+  props: {
+    categories: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props) {
     const shots = ref([]);
-    const shotPagination = reactive({ page: 1, total_pages: 1 });
-    const loading = ref(false);
+    const shotPagination = reactive({ page: 1, total_pages: 2 });
+    const loading = ref(true);
     const isLoadMore = ref(false);
     const isNoMoreResult = ref(false);
     const route = useRoute();
@@ -66,9 +72,10 @@ export default {
     async function reFetchShots() {
       loading.value = true;
       try {
+        isNoMoreResult.value = false;
         shots.value = [];
         shotPagination.page = 1;
-        isNoMoreResult.value = false;
+
         await fetchShots(shotPagination.page);
       } catch (e) {
         console.log(e);
@@ -77,13 +84,16 @@ export default {
       }
     }
     async function fetchShots(page = 1, limit = 12) {
+      const { category } = route.params;
+      const currentCate = category
+        ? props.categories.find((cate) => cate.tag === category)
+        : null;
+      const params = {
+        page,
+        limit,
+        ...(currentCate && { category_id: currentCate.id }),
+      };
       try {
-        const { category_id } = route.query;
-        const params = {
-          page,
-          limit,
-          ...(category_id && { category_id }),
-        };
         const { data, pagination } = await shotsApi.get(params);
         if (data && pagination) {
           shots.value = shots.value.concat(data);
@@ -101,7 +111,7 @@ export default {
           shotPagination.page++;
           isLoadMore.value = true;
           await fetchShots(shotPagination.page);
-        } else isNoMoreResult.value = true;
+        } else if (page === total_pages) isNoMoreResult.value = true;
       } catch (e) {
         console.log(e);
       } finally {

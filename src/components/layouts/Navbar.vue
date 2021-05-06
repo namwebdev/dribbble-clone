@@ -1,11 +1,16 @@
 <template>
-  <div class="antialiased bg-white sticky top-0 left-0 h-16 lg:h-20 z-50 w-full">
+  <div
+    class="antialiased bg-white sticky top-0 left-0 h-16 lg:h-20 z-50 w-full"
+  >
     <!-- Desktop Nav -->
     <div class="sm:block hidden shadow h-full">
       <nav
         class="flex items-center justify-between flex-wrap bg-teal px-6 h-full"
       >
-        <div class="flex items-center flex-no-shrink text-white mr-6">
+        <router-link
+          class="flex items-center flex-no-shrink text-white mr-6"
+          :to="{ path: '/' }"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="76px"
@@ -21,7 +26,7 @@
               fill="#0D0C22"
             ></path>
           </svg>
-        </div>
+        </router-link>
         <div class="block w-full flex-grow sm:flex sm:items-center sm:w-auto">
           <div class="text-sm sm:flex-grow">
             <a
@@ -62,7 +67,10 @@
             </svg>
           </button>
         </div>
-        <div class="m-auto w-full absolute flex justify-center">
+        <router-link
+          class="m-auto w-full absolute flex justify-center"
+          :to="{ path: '/' }"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="76px"
@@ -78,7 +86,7 @@
               fill="#0D0C22"
             ></path>
           </svg>
-        </div>
+        </router-link>
         <div class="text-right">
           <a
             href="#"
