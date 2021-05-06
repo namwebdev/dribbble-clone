@@ -1,6 +1,6 @@
 <template>
   <div class="shot-container">
-    <div class="relative">
+    <div class="shot-preview relative">
       <a :href="link" target="_blank" class="shot-overlay transition-effect">
         <div class="h-1/4 flex items-center justify-between w-full px-4">
           <div class="text-white font-bold">{{ title }}</div>
@@ -35,7 +35,9 @@
           :src="author_avatar"
           :alt="author_name"
         />
-        <span class="text-sm ml-2 font-bold">{{ author_name }}</span>
+        <a :href="author_link" target="_blank" class="text-sm ml-2 font-bold">
+          {{ author_name }}
+        </a>
       </div>
       <!--  -->
       <div class="flex items-center">
@@ -111,7 +113,7 @@ export default {
 </script>
 
 <style>
-.shot-container:hover > .relative > .shot-overlay {
+.shot-preview:hover > .shot-overlay {
   @apply opacity-100;
 }
 .shot-overlay {

@@ -44,10 +44,12 @@ export default {
       return category.id === 0;
     }
     function handleRouteToCategoryPage(category) {
-      const routeObj = category.tag
-        ? { name: "Category", params: { category: category.tag } }
-        : { name: "Home" };
-      router.push(routeObj);
+      // const routeObj = category.tag
+      //   ? { name: "Category", params: { category: category.tag } }
+      //   : { name: "Home" };
+      // router.push(routeObj);
+      const routeLink = category.tag ? `/category/${category.tag}` : "/";
+      window.location.href = routeLink;
     }
     function handleSwipeShots() {
       const slider = document.getElementById("shots");
