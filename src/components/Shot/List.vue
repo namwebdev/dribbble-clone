@@ -2,8 +2,12 @@
   <div v-if="!loading">
     <div class="list-shot" id="list-shot">
       <ShotItem v-for="shot in shots" :key="shot.id" :shot="shot" />
+      <ShotLoadingItem
+        v-show="isLoadMore && !isNoMoreResult"
+        v-for="(shot, index) in 4"
+        :key="index"
+      />
     </div>
-    <div v-show="isLoadMore && !isNoMoreResult">Load more...</div>
     <div
       v-show="isNoMoreResult"
       class="flex items-center justify-center mt-8 text-xs"
@@ -24,7 +28,7 @@
 </template>
 
 <script>
-import { ref, reactive, watch, onMounted, nextTick } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import shotsApi from "@/api/Factory/shots.js";
 import ShotItem from "@/components/Shot/Item.vue";
@@ -35,7 +39,7 @@ export default {
   setup() {
     const shots = ref([]);
     const shotPagination = reactive({ page: 1, total_pages: 1 });
-    const loading = ref(true);
+    const loading = ref(false);
     const isLoadMore = ref(false);
     const isNoMoreResult = ref(false);
     const route = useRoute();
@@ -49,14 +53,13 @@ export default {
     );
 
     onMounted(() => {
-      window.addEventListener("scroll", async () => {
+      window.addEventListener("scroll", () => {
         const element = document.getElementById("list-shot");
-        await nextTick();
         if (
           element &&
           window.scrollY + window.innerHeight >= element.scrollHeight
         )
-          await loadMore();
+          loadMore();
       });
     });
 
