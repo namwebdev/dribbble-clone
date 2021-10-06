@@ -9,7 +9,7 @@
     </p>
   </div>
   <div v-if="!loading" class="container">
-    <CategoryTabs :categories="categories" />
+    <!-- <CategoryTabs :categories="categories" /> -->
     <ListShot :categories="categories" />
   </div>
 </template>
